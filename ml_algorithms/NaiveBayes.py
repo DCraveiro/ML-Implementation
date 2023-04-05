@@ -18,7 +18,7 @@ class NaiveBayes:
 
             self._mean[idx, :] = X_c.mean(axis=0)
             self._var[idx, :] = X_c.var(axis=0)
-            self._priors[idx, :] = X_c.shape[0] / float(n_samples)
+            self._priors[idx] = X_c.shape[0] / float(n_samples)
 
 
     def predict(self, X):
@@ -32,4 +32,18 @@ class NaiveBayes:
         # calculate posterior probability for each class
         for idx, c in enumerate(self._classes):
             prior = np.log(self._priors[idx])
-            
+            posterior = np.sum(np.log(self._pdf(idx, x)))
+            posterior += prior
+            posteriors.append(posterior)
+
+        # return class with the highest posterior
+        return self._classes[np.argmax(posteriors)]
+    
+
+    def _pdf(self, class_idx, x):
+        mean = self._mean[class_idx]
+        var = self._var[class_idx]
+
+        numerator = np.exp(-((x - mean) ** 2) / (2 * var))
+        denominator = np.sqrt(2 * np.pi * var)
+        return numerator / denominator
